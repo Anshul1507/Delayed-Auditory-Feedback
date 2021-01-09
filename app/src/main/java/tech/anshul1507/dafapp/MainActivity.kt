@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import tech.anshul1507.dafapp.databinding.ActivityMainBinding
+import java.util.*
+import kotlin.concurrent.schedule
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,7 +37,10 @@ class MainActivity : AppCompatActivity() {
         ) {
             ActivityCompat.requestPermissions(
                 this@MainActivity,
-                arrayOf(permission),
+                arrayOf(
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
                 REQUEST_CODE_ASK_PERMISSIONS
             )
         }
@@ -47,16 +52,24 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         when (requestCode) {
-            REQUEST_CODE_ASK_PERMISSIONS -> if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            REQUEST_CODE_ASK_PERMISSIONS -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                Toast.makeText(this@MainActivity, "Permission Granted", Toast.LENGTH_SHORT)
+                Toast.makeText(this@MainActivity, "Enjoy our app", Toast.LENGTH_SHORT)
                     .show()
             } else {
-                // Permission Denied
-                Toast.makeText(this@MainActivity, "Permission Denied", Toast.LENGTH_SHORT)
+                // Permission Denied => Kill App
+                Toast.makeText(this@MainActivity, "Grant us Permissions", Toast.LENGTH_SHORT)
                     .show()
+
+                //Timer for making above toast visible to user and then kill the app.
+                Timer("Permission Denied", false).schedule(
+                    500
+                ) {
+                    if (grantResults.isNotEmpty())
+                        finish()
+                }
             }
-            else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 }
