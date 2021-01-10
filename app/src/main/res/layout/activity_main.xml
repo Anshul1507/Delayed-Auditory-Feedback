@@ -26,6 +26,15 @@
         android:text="Status: InActive"
         android:textSize="22sp" />
 
+    <EditText
+        android:id="@+id/edittext_delay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_status"
+        android:layout_marginTop="24dp"
+        android:hint="Enter your delay in secs"
+        android:inputType="numberDecimal" />
+
     <Button
         android:id="@+id/button_start"
         android:layout_width="wrap_content"

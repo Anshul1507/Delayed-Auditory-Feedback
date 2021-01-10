@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var audioTrack: AudioTrack
     private lateinit var audioData: ShortArray
 
+    private var delayInSeconds = 0.0
     private var isActive = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,10 +50,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startButtonFun() {
-        isActive = true
-        binding.textStatus.text = "Status: Active"
+        if (binding.edittextDelay.text.isNotEmpty()) {
+            isActive = true
+            binding.textStatus.text = "Status: Active"
 
-        Thread { recordAndPlay() }.start()
+            delayInSeconds = binding.edittextDelay.text.toString().toDouble()
+            Thread { recordAndPlay() }.start()
+        } else {
+            Toast.makeText(applicationContext, "Please enter some delay", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun stopButtonFun() {
@@ -67,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 
         val recordBufferSize = 22050 //in bytes
         val sampleCommonRate = 8000
-        val playBufferSize = 22050 //1 sec delay
+        val playBufferSize = (22050 * delayInSeconds).toInt() //1 sec delay
 
         //set up recording audio settings
         audioRecord = AudioRecord(
