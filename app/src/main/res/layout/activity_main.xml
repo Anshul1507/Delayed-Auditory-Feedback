@@ -26,11 +26,22 @@
         android:text="Status: InActive"
         android:textSize="22sp" />
 
+    <TextView
+        android:id="@+id/text_delay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_status"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="6dp"
+        android:fontFamily="sans-serif-condensed-medium"
+        android:text="Delay: 0s"
+        android:textSize="22sp" />
+
     <EditText
         android:id="@+id/edittext_delay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/text_status"
+        android:layout_below="@id/text_delay"
         android:layout_marginTop="24dp"
         android:hint="Enter your delay in secs"
         android:inputType="numberDecimal" />

@@ -60,6 +60,10 @@ class MainActivity : AppCompatActivity() {
             binding.textStatus.text = "Status: Active"
 
             delayInSeconds = binding.edittextDelay.text.toString().toDouble()
+            binding.textDelay.text = "Delay: ${delayInSeconds.toInt()}s"
+            binding.edittextDelay.text.clear()
+            binding.edittextDelay.text.clearSpans()
+
             Thread { recordAndPlay() }.start()
         } else {
             Toast.makeText(applicationContext, "Please enter some delay", Toast.LENGTH_SHORT).show()
@@ -69,6 +73,10 @@ class MainActivity : AppCompatActivity() {
     private fun stopButtonFun() {
         isActive = false
         binding.textStatus.text = "Status: Inactive"
+        binding.textDelay.text = "Delay: 0s"
+        binding.edittextDelay.text.clear()
+        binding.edittextDelay.text.clearSpans()
+
         audioTrack.stop()
         audioRecord.stop()
     }
