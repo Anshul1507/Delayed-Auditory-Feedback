@@ -62,7 +62,6 @@ class MainActivity : AppCompatActivity() {
             delayInSeconds = binding.edittextDelay.text.toString().toDouble()
             binding.textDelay.text = "Delay: ${delayInSeconds.toInt()}s"
             binding.edittextDelay.text.clear()
-            binding.edittextDelay.text.clearSpans()
 
             Thread { recordAndPlay() }.start()
         } else {
@@ -74,8 +73,6 @@ class MainActivity : AppCompatActivity() {
         isActive = false
         binding.textStatus.text = "Status: Inactive"
         binding.textDelay.text = "Delay: 0s"
-        binding.edittextDelay.text.clear()
-        binding.edittextDelay.text.clearSpans()
 
         audioTrack.stop()
         audioRecord.stop()
