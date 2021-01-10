@@ -2,8 +2,8 @@ package tech.anshul1507.dafapp
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.media.AudioRecord
-import android.media.AudioTrack
+import android.media.*
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -63,6 +63,60 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun recordAndPlay() {
+        audioData = shortArrayOf(1024)
+
+        val recordBufferSize = 22050 //in bytes
+        val sampleCommonRate = 8000
+        val playBufferSize = 22050 //1 sec delay
+
+        //set up recording audio settings
+        audioRecord = AudioRecord(
+            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+            sampleCommonRate,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            recordBufferSize
+        )
+
+        //set up audio track/play settings
+        audioTrack = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val attributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+
+            val audioFormat = AudioFormat.Builder()
+                .setSampleRate(sampleCommonRate)
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO).build()
+
+            AudioTrack(
+                attributes,
+                audioFormat,
+                playBufferSize,
+                AudioTrack.MODE_STREAM,
+                AudioManager.AUDIO_SESSION_ID_GENERATE
+            )
+        } else {
+            //support for Android KitKat and lower
+            AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                sampleCommonRate,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                playBufferSize,
+                AudioTrack.MODE_STREAM
+            )
+        }
+
+        audioRecord.startRecording()
+        audioTrack.play()
+
+        //Read from recording and setup track to play
+        while (isActive) {
+            audioRecord.read(audioData, 0, audioData.size)
+            audioTrack.write(audioData, 0, audioData.size)
+        }
 
     }
 
