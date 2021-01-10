@@ -50,6 +50,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startButtonFun() {
+        if (isActive) {
+            //change delay while Active
+            stopButtonFun()
+        }
+
         if (binding.edittextDelay.text.isNotEmpty()) {
             isActive = true
             binding.textStatus.text = "Status: Active"
