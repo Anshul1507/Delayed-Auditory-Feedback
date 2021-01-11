@@ -37,11 +37,21 @@
         android:text="Delay: 0s"
         android:textSize="22sp" />
 
+    <SeekBar
+        android:id="@+id/seekbar_delay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_delay"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:max="16"
+        android:theme="@style/Widget.AppCompat.SeekBar.Discrete" />
+
     <EditText
         android:id="@+id/edittext_delay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/text_delay"
+        android:layout_below="@id/seekbar_delay"
         android:layout_marginTop="24dp"
         android:hint="Enter your delay in secs"
         android:inputType="numberDecimal" />

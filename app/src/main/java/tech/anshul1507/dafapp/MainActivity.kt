@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import android.media.*
 import android.os.Build
 import android.os.Bundle
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -47,6 +49,20 @@ class MainActivity : AppCompatActivity() {
             stopButtonFun()
         }
 
+        binding.seekbarDelay.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                delayInSeconds = seekBar.progress * 0.25
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
+
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                //todo:: text view change to show user seekbar values
+            }
+        }
+        )
+
     }
 
     private fun startButtonFun() {
@@ -65,7 +81,11 @@ class MainActivity : AppCompatActivity() {
 
             Thread { recordAndPlay() }.start()
         } else {
-            Toast.makeText(applicationContext, "Please enter some delay", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                applicationContext,
+                "Please enter some delay",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -167,7 +187,11 @@ class MainActivity : AppCompatActivity() {
                     .show()
             } else {
                 // Permission Denied => Kill App
-                Toast.makeText(this@MainActivity, "Grant us Permissions", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    this@MainActivity,
+                    "Grant us Permissions",
+                    Toast.LENGTH_SHORT
+                )
                     .show()
 
                 //Timer for making above toast visible to user and then kill the app.
