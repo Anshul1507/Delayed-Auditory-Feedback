@@ -71,22 +71,13 @@ class MainActivity : AppCompatActivity() {
             stopButtonFun()
         }
 
-        if (binding.edittextDelay.text.isNotEmpty()) {
-            isActive = true
-            binding.textStatus.text = "Status: Active"
+        isActive = true
+        binding.textStatus.text = "Status: Active"
 
-            delayInSeconds = binding.edittextDelay.text.toString().toDouble()
-            binding.textDelay.text = "Delay: ${delayInSeconds.toInt()}s"
-            binding.edittextDelay.text.clear()
+        binding.textDelay.text = "Delay: ${delayInSeconds.toInt()}s"
 
-            Thread { recordAndPlay() }.start()
-        } else {
-            Toast.makeText(
-                applicationContext,
-                "Please enter some delay",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        Thread { recordAndPlay() }.start()
+
     }
 
     private fun stopButtonFun() {
@@ -104,6 +95,7 @@ class MainActivity : AppCompatActivity() {
         val sampleCommonRate = 8000 //48 KHz [standard sample rate for audio/video]
         val recordBufferSize = 22050 //in bytes
         val playBufferSize = ((22050) * delayInSeconds).toInt() //1 sec delay
+        //todo:: handle 0 value case
 
         //set up recording audio settings
         audioRecord = AudioRecord(

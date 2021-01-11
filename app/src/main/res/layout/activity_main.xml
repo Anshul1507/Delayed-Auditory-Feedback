@@ -47,15 +47,6 @@
         android:max="16"
         android:theme="@style/Widget.AppCompat.SeekBar.Discrete" />
 
-    <EditText
-        android:id="@+id/edittext_delay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/seekbar_delay"
-        android:layout_marginTop="24dp"
-        android:hint="Enter your delay in secs"
-        android:inputType="numberDecimal" />
-
     <Button
         android:id="@+id/button_start"
         android:layout_width="wrap_content"
