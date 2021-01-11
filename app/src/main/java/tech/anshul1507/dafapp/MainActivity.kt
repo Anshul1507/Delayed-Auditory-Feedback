@@ -132,8 +132,8 @@ class MainActivity : AppCompatActivity() {
 
         //Read from recording and setup track to play
         while (isActive) {
-            audioRecord.read(audioData, 0, audioData.size)
-            audioTrack.write(audioData, 0, audioData.size)
+            val sz = audioRecord.read(audioData, 0, audioData.size)
+            audioTrack.write(audioData, 0, sz)
         }
 
     }
