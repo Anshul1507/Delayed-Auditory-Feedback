@@ -81,9 +81,9 @@ class MainActivity : AppCompatActivity() {
     private fun recordAndPlay() {
         audioData = shortArrayOf(1024)
 
+        val sampleCommonRate = 8000 //48 KHz [standard sample rate for audio/video]
         val recordBufferSize = 22050 //in bytes
-        val sampleCommonRate = 8000
-        val playBufferSize = (22050 * delayInSeconds).toInt() //1 sec delay
+        val playBufferSize = ((22050) * delayInSeconds).toInt() //1 sec delay
 
         //set up recording audio settings
         audioRecord = AudioRecord(
@@ -126,7 +126,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         audioRecord.startRecording()
-        audioTrack.play()
+        if (audioTrack.playState != AudioTrack.PLAYSTATE_PLAYING) {
+            audioTrack.play()
+        }
 
         //Read from recording and setup track to play
         while (isActive) {
