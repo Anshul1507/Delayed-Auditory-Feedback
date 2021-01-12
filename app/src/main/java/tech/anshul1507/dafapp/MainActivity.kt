@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
                 audioFormat,
                 playBufferSize,
                 AudioTrack.MODE_STREAM,
-                AudioManager.AUDIO_SESSION_ID_GENERATE
+                AudioManager.MODE_IN_COMMUNICATION
             )
         } else {
             //support for Android KitKat and lower
