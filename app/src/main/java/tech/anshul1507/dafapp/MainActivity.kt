@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.media.*
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
@@ -91,6 +92,10 @@ class MainActivity : AppCompatActivity() {
 
         val sampleCommonRate = 8000 //48 KHz [standard sample rate for audio/video]
         val recordBufferSize = 22050 //in bytes
+
+        //handle delay values which is not supported as buffer sizes
+        formatDelayValuesForValidBufferSize()
+
         val playBufferSize = ((22050) * delayInSeconds).toInt() //1 sec delay
         //todo:: handle 0 value case
 
@@ -145,6 +150,29 @@ class MainActivity : AppCompatActivity() {
             audioTrack.write(audioData, 0, sz)
         }
 
+    }
+
+    //Function return valid buffer size delays
+    private fun formatDelayValuesForValidBufferSize() {
+        /* {Delay Values} -> {Converted Delay Values}
+         {0/1/2/3}.25 -> {0/1/2/3}.2
+         {0/1/2/3}.50 -> {0/1/2/3}.45
+         {0/1/2/3}.75 -> {0/1/2/3}.65
+        */
+        var decimalValue = delayInSeconds - delayInSeconds.toInt()
+
+        when (decimalValue) {
+            0.25 -> {
+                decimalValue = 0.2
+            }
+            0.5 -> {
+                decimalValue = 0.45
+            }
+            0.75 -> {
+                decimalValue = 0.65
+            }
+        }
+        (delayInSeconds.toInt() + decimalValue).also { delayInSeconds = it }
     }
 
     private fun requestPermission(permission: String) {
