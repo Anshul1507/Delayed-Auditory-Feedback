@@ -3,6 +3,7 @@ package tech.anshul1507.dafapp
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.*
+import android.media.audiofx.AcousticEchoCanceler
 import android.os.Build
 import android.os.Bundle
 import android.widget.SeekBar
@@ -97,7 +98,7 @@ class MainActivity : AppCompatActivity() {
 
         var playBufferSize = 22050
         if (delayInSeconds.equals(0.0)) {
-            //no delay, back t 44.1 KHz where no latency occurs
+            //no delay, back to 44.1 KHz where no latency occurs
             sampleCommonRate = 44100
         } else {
             ((playBufferSize * delayInSeconds).toInt()).also { playBufferSize = it }
@@ -112,11 +113,17 @@ class MainActivity : AppCompatActivity() {
             recordBufferSize
         )
 
+        //For cancelling the echo
+        if (AcousticEchoCanceler.isAvailable()) {
+            val echoCanceler = AcousticEchoCanceler.create(audioRecord.audioSessionId)
+            echoCanceler.enabled = true
+        }
+
         //set up audio track/play settings
         audioTrack = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val attributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .build()
 
             val audioFormat = AudioFormat.Builder()
@@ -134,7 +141,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             //support for Android KitKat and lower
             AudioTrack(
-                AudioManager.STREAM_MUSIC,
+                AudioManager.MODE_IN_COMMUNICATION,
                 sampleCommonRate,
                 AudioFormat.CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
@@ -150,8 +157,8 @@ class MainActivity : AppCompatActivity() {
 
         //Read from recording and setup track to play
         while (isActive) {
-            val sz = audioRecord.read(audioData, 0, audioData.size)
-            audioTrack.write(audioData, 0, sz)
+            audioRecord.read(audioData, 0, audioData.size)
+            audioTrack.write(audioData, 0, audioData.size)
         }
 
     }
