@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                binding.textDelay.text = "Delay: ${progress * 0.25}s"
+                (progress * 0.25).also { binding.textDelay.text = "Delay: ${it}s" }
             }
         }
         )
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         isActive = true
-        binding.textStatus.text = "Status: Active with ${delayInSeconds.toInt()}s Delay"
+        binding.textStatus.text = "Status: Active with ${delayInSeconds}s Delay"
 
         Thread { recordAndPlay() }.start()
 
