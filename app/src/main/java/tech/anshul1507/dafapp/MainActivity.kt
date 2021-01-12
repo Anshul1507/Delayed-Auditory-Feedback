@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.media.*
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
@@ -90,14 +89,19 @@ class MainActivity : AppCompatActivity() {
     private fun recordAndPlay() {
         audioData = shortArrayOf(1024)
 
-        val sampleCommonRate = 8000 //48 KHz [standard sample rate for audio/video]
+        var sampleCommonRate = 8000 //8 KHz [standard minimal sample rate for audio/video]
         val recordBufferSize = 22050 //in bytes
 
         //handle delay values which is not supported as buffer sizes
         formatDelayValuesForValidBufferSize()
 
-        val playBufferSize = ((22050) * delayInSeconds).toInt() //1 sec delay
-        //todo:: handle 0 value case
+        var playBufferSize = 22050
+        if (delayInSeconds.equals(0.0)) {
+            //no delay, back t 44.1 KHz where no latency occurs
+            sampleCommonRate = 44100
+        } else {
+            ((playBufferSize * delayInSeconds).toInt()).also { playBufferSize = it }
+        }
 
         //set up recording audio settings
         audioRecord = AudioRecord(
