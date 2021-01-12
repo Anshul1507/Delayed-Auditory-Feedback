@@ -51,14 +51,14 @@ class MainActivity : AppCompatActivity() {
 
         binding.seekbarDelay.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onStopTrackingTouch(seekBar: SeekBar) {
-                delayInSeconds = seekBar.progress * 0.25
+                (seekBar.progress * 0.25).also { delayInSeconds = it }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
             }
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                //todo:: text view change to show user seekbar values
+                binding.textDelay.text = "Delay: ${progress * 0.25}s"
             }
         }
         )
@@ -72,9 +72,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         isActive = true
-        binding.textStatus.text = "Status: Active"
-
-        binding.textDelay.text = "Delay: ${delayInSeconds.toInt()}s"
+        binding.textStatus.text = "Status: Active with ${delayInSeconds.toInt()}s Delay"
 
         Thread { recordAndPlay() }.start()
 
@@ -83,7 +81,6 @@ class MainActivity : AppCompatActivity() {
     private fun stopButtonFun() {
         isActive = false
         binding.textStatus.text = "Status: Inactive"
-        binding.textDelay.text = "Delay: 0s"
 
         audioTrack.stop()
         audioRecord.stop()

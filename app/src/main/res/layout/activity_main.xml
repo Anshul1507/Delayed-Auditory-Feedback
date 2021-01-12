@@ -26,26 +26,25 @@
         android:text="Status: InActive"
         android:textSize="22sp" />
 
+    <SeekBar
+        android:id="@+id/seekbar_delay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_status"
+        android:layout_marginTop="24dp"
+        android:max="16"
+        android:theme="@style/Widget.AppCompat.SeekBar.Discrete" />
+
     <TextView
         android:id="@+id/text_delay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/text_status"
+        android:layout_below="@id/seekbar_delay"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="6dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:text="Delay: 0s"
         android:textSize="22sp" />
-
-    <SeekBar
-        android:id="@+id/seekbar_delay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/text_delay"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="24dp"
-        android:max="16"
-        android:theme="@style/Widget.AppCompat.SeekBar.Discrete" />
 
     <Button
         android:id="@+id/button_start"
