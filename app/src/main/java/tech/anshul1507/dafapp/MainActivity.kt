@@ -9,12 +9,15 @@ import android.os.Bundle
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import tech.anshul1507.dafapp.databinding.ActivityMainBinding
 import java.util.*
 import kotlin.concurrent.schedule
+import kotlin.math.floor
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +31,9 @@ class MainActivity : AppCompatActivity() {
     private var delayInSeconds = 0.0
     private var isActive = false
 
+    private lateinit var am: AudioManager
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -39,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         requestPermission(Manifest.permission.RECORD_AUDIO)
         requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
 
+        am = this.getSystemService(AUDIO_SERVICE) as AudioManager
         /*
         * UI OnClickListeners
         * */
@@ -66,6 +73,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private fun startButtonFun() {
         if (isActive) {
             //change delay while Active
@@ -87,22 +95,48 @@ class MainActivity : AppCompatActivity() {
         audioRecord.stop()
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private fun recordAndPlay() {
-        audioData = shortArrayOf(1024)
-
-        var sampleCommonRate = 8000 //8 KHz [standard minimal sample rate for audio/video]
-        val recordBufferSize = 22050 //in bytes
 
         //handle delay values which is not supported as buffer sizes
         formatDelayValuesForValidBufferSize()
 
-        var playBufferSize = 22050
+        /*
+        * Code to get device's sample rate and frames per burst
+        * Frames per burst -> No. of frames operated in 1 ms
+        *  */
+        var text: String = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
+        val framesPerBurst = text.toInt()
+        text = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+        val sampleRate = text.toInt()
+
+//        Log.e("test", "sample rate" + sampleRate + "frames per burst " + framesPerBurst)
+
+        var sampleCommonRate = sampleRate //8 KHz [standard minimal sample rate for audio/video]
+        var recordBufferSize = floor(delayInSeconds / 1000 * sampleCommonRate).toInt()
+        audioData = shortArrayOf(framesPerBurst.toShort())
+
+        var playBufferSize = recordBufferSize
+
         if (delayInSeconds.equals(0.0)) {
             //no delay, back to 44.1 KHz where no latency occurs
             sampleCommonRate = 44100
-        } else {
-            ((playBufferSize * delayInSeconds).toInt()).also { playBufferSize = it }
         }
+//        else {
+//            ((playBufferSize * delayInSeconds).toInt()).also { playBufferSize = it }
+//        }
+
+//        var min = AudioRecord.getMinBufferSize(
+//            sampleCommonRate,
+//            AudioFormat.CHANNEL_IN_MONO,
+//            AudioFormat.ENCODING_PCM_16BIT
+//        )
+//
+//        var maxJitter = AudioTrack.getMinBufferSize(
+//            (sampleCommonRate*delayInSeconds).toInt(),
+//            AudioFormat.CHANNEL_OUT_MONO,
+//            AudioFormat.ENCODING_PCM_16BIT
+//        )
 
         //set up recording audio settings
         audioRecord = AudioRecord(
@@ -134,18 +168,18 @@ class MainActivity : AppCompatActivity() {
             AudioTrack(
                 attributes,
                 audioFormat,
-                playBufferSize,
+                recordBufferSize,
                 AudioTrack.MODE_STREAM,
-                AudioManager.MODE_IN_COMMUNICATION
+                AudioManager.AUDIO_SESSION_ID_GENERATE
             )
         } else {
             //support for Android KitKat and lower
             AudioTrack(
-                AudioManager.MODE_IN_COMMUNICATION,
+                AudioManager.STREAM_MUSIC,
                 sampleCommonRate,
                 AudioFormat.CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
-                playBufferSize,
+                recordBufferSize,
                 AudioTrack.MODE_STREAM
             )
         }
@@ -157,9 +191,15 @@ class MainActivity : AppCompatActivity() {
 
         //Read from recording and setup track to play
         while (isActive) {
-            audioRecord.read(audioData, 0, audioData.size)
-            audioTrack.write(audioData, 0, audioData.size)
+            val x = audioRecord.read(audioData, 0, audioData.size)
+            audioTrack.write(audioData, 0, x)
         }
+
+        //To release audio tracks and records to reduce buffer related problems
+//        audioTrack.stop();
+//        audioTrack.release();
+//        audioRecord.stop();
+//        audioRecord.release();
 
     }
 
