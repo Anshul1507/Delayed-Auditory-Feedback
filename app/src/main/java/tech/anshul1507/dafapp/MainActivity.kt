@@ -3,7 +3,6 @@ package tech.anshul1507.dafapp
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.*
-import android.media.audiofx.AcousticEchoCanceler
 import android.os.Build
 import android.os.Bundle
 import android.widget.SeekBar
@@ -16,7 +15,6 @@ import androidx.core.content.ContextCompat
 import tech.anshul1507.dafapp.databinding.ActivityMainBinding
 import java.util.*
 import kotlin.concurrent.schedule
-import kotlin.math.floor
 
 
 class MainActivity : AppCompatActivity() {
@@ -24,16 +22,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val REQUEST_CODE_ASK_PERMISSIONS = 101
 
-    private lateinit var audioRecord: AudioRecord
-    private lateinit var audioTrack: AudioTrack
-    private lateinit var audioData: ShortArray
+    private lateinit var audioSource: AudioBufferManager
 
-    private var delayInSeconds = 0.0
-    private var isActive = false
+    companion object {
+        //General Shared vars
+        var delayInSeconds = 0.0
+        var isActive = false
+        var AudioSessionID = 0
+    }
 
-    private lateinit var am: AudioManager
-
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,7 +42,6 @@ class MainActivity : AppCompatActivity() {
         requestPermission(Manifest.permission.RECORD_AUDIO)
         requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
 
-        am = this.getSystemService(AUDIO_SERVICE) as AudioManager
         /*
         * UI OnClickListeners
         * */
@@ -58,12 +54,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.seekbarDelay.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-                (seekBar.progress * 0.25).also { delayInSeconds = it }
-            }
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 (progress * 0.25).also { binding.textDelay.text = "Delay: ${it}s" }
@@ -73,157 +66,25 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private fun startButtonFun() {
         if (isActive) {
-            //change delay while Active
-            stopButtonFun()
+            //change delay while DAF is Active
+            audioSource.interrupt()
         }
 
         isActive = true
+        delayInSeconds = (binding.seekbarDelay.progress * 0.25)
         binding.textStatus.text = "Status: Active with ${delayInSeconds}s Delay"
+        delayInSeconds *= 2000 //convert to ms [2000 => 2 channels]
 
-        Thread { recordAndPlay() }.start()
-
+        audioSource = AudioBufferManager(delayInSeconds.toInt())
+        audioSource.start()
     }
 
     private fun stopButtonFun() {
         isActive = false
         binding.textStatus.text = "Status: Inactive"
-
-        audioTrack.stop()
-        audioRecord.stop()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    private fun recordAndPlay() {
-
-        //handle delay values which is not supported as buffer sizes
-        formatDelayValuesForValidBufferSize()
-
-        /*
-        * Code to get device's sample rate and frames per burst
-        * Frames per burst -> No. of frames operated in 1 ms
-        *  */
-        var text: String = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
-        val framesPerBurst = text.toInt()
-        text = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
-        val sampleRate = text.toInt()
-
-//        Log.e("test", "sample rate" + sampleRate + "frames per burst " + framesPerBurst)
-
-        var sampleCommonRate = sampleRate //8 KHz [standard minimal sample rate for audio/video]
-        var recordBufferSize = floor(delayInSeconds / 1000 * sampleCommonRate).toInt()
-        audioData = shortArrayOf(framesPerBurst.toShort())
-
-        var playBufferSize = recordBufferSize
-
-        if (delayInSeconds.equals(0.0)) {
-            //no delay, back to 44.1 KHz where no latency occurs
-            sampleCommonRate = 44100
-        }
-//        else {
-//            ((playBufferSize * delayInSeconds).toInt()).also { playBufferSize = it }
-//        }
-
-//        var min = AudioRecord.getMinBufferSize(
-//            sampleCommonRate,
-//            AudioFormat.CHANNEL_IN_MONO,
-//            AudioFormat.ENCODING_PCM_16BIT
-//        )
-//
-//        var maxJitter = AudioTrack.getMinBufferSize(
-//            (sampleCommonRate*delayInSeconds).toInt(),
-//            AudioFormat.CHANNEL_OUT_MONO,
-//            AudioFormat.ENCODING_PCM_16BIT
-//        )
-
-        //set up recording audio settings
-        audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-            sampleCommonRate,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT,
-            recordBufferSize
-        )
-
-        //For cancelling the echo
-        if (AcousticEchoCanceler.isAvailable()) {
-            val echoCanceler = AcousticEchoCanceler.create(audioRecord.audioSessionId)
-            echoCanceler.enabled = true
-        }
-
-        //set up audio track/play settings
-        audioTrack = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val attributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                .build()
-
-            val audioFormat = AudioFormat.Builder()
-                .setSampleRate(sampleCommonRate)
-                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO).build()
-
-            AudioTrack(
-                attributes,
-                audioFormat,
-                recordBufferSize,
-                AudioTrack.MODE_STREAM,
-                AudioManager.AUDIO_SESSION_ID_GENERATE
-            )
-        } else {
-            //support for Android KitKat and lower
-            AudioTrack(
-                AudioManager.STREAM_MUSIC,
-                sampleCommonRate,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                recordBufferSize,
-                AudioTrack.MODE_STREAM
-            )
-        }
-
-        audioRecord.startRecording()
-        if (audioTrack.playState != AudioTrack.PLAYSTATE_PLAYING) {
-            audioTrack.play()
-        }
-
-        //Read from recording and setup track to play
-        while (isActive) {
-            val x = audioRecord.read(audioData, 0, audioData.size)
-            audioTrack.write(audioData, 0, x)
-        }
-
-        //To release audio tracks and records to reduce buffer related problems
-//        audioTrack.stop();
-//        audioTrack.release();
-//        audioRecord.stop();
-//        audioRecord.release();
-
-    }
-
-    //Function return valid buffer size delays
-    private fun formatDelayValuesForValidBufferSize() {
-        /* {Delay Values} -> {Converted Delay Values}
-         {0/1/2/3}.25 -> {0/1/2/3}.2
-         {0/1/2/3}.50 -> {0/1/2/3}.45
-         {0/1/2/3}.75 -> {0/1/2/3}.65
-        */
-        var decimalValue = delayInSeconds - delayInSeconds.toInt()
-
-        when (decimalValue) {
-            0.25 -> {
-                decimalValue = 0.2
-            }
-            0.5 -> {
-                decimalValue = 0.45
-            }
-            0.75 -> {
-                decimalValue = 0.65
-            }
-        }
-        (delayInSeconds.toInt() + decimalValue).also { delayInSeconds = it }
+        audioSource.interrupt()
     }
 
     private fun requestPermission(permission: String) {
