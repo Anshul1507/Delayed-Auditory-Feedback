@@ -154,6 +154,7 @@ class AudioBufferManager(delay_time: Int) : Thread() {
         audioRecord.stop()
         audioRecord.release()
         audioTrack.stop()
+        circularByteBuffer.clear()
         Log.i("LOG_TAG", "Stage is yours")
         return
     }

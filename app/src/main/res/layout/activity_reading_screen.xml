@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context=".MainActivity">
+    tools:context=".ReadingScreen">
 
     <TextView
         android:id="@+id/text_title"
@@ -12,36 +12,27 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:fontFamily="sans-serif-condensed-medium"
-        android:text="Click Start for DAF"
+        android:text="Speak something to check your voice feedback"
         android:textSize="20sp" />
 
-    <SeekBar
-        android:id="@+id/seekbar_delay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/text_title"
-        android:layout_marginTop="24dp"
-        android:max="16"
-        android:theme="@style/Widget.AppCompat.SeekBar.Discrete" />
-
     <TextView
-        android:id="@+id/text_delay"
+        android:id="@+id/text_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/seekbar_delay"
+        android:layout_below="@id/text_title"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="12dp"
         android:fontFamily="sans-serif-condensed-medium"
-        android:text="Delay: 0s"
+        android:text="Status: InActive"
         android:textSize="22sp" />
 
     <Button
-        android:id="@+id/button_start"
+        android:id="@+id/button_stop_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:text="Start"
+        android:text="Stop/Back"
         android:textAllCaps="false" />
 
 </RelativeLayout>

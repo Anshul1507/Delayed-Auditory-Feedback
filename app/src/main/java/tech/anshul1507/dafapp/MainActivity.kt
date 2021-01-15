@@ -1,14 +1,13 @@
 package tech.anshul1507.dafapp
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.*
-import android.os.Build
 import android.os.Bundle
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -22,12 +21,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val REQUEST_CODE_ASK_PERMISSIONS = 101
 
-    private lateinit var audioSource: AudioBufferManager
-
     companion object {
         //General Shared vars
         var delayInSeconds = 0.0
-        var isActive = false
         var AudioSessionID = 0
     }
 
@@ -49,12 +45,10 @@ class MainActivity : AppCompatActivity() {
             startButtonFun()
         }
 
-        binding.buttonStop.setOnClickListener {
-            stopButtonFun()
-        }
-
         binding.seekbarDelay.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                (seekBar.progress * 0.25).also { delayInSeconds = it }
+            }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
@@ -67,24 +61,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startButtonFun() {
-        if (isActive) {
-            //change delay while DAF is Active
-            audioSource.interrupt()
-        }
-
-        isActive = true
-        delayInSeconds = (binding.seekbarDelay.progress * 0.25)
-        binding.textStatus.text = "Status: Active with ${delayInSeconds}s Delay"
-        delayInSeconds *= 2000 //convert to ms [2000 => 2 channels]
-
-        audioSource = AudioBufferManager(delayInSeconds.toInt())
-        audioSource.start()
-    }
-
-    private fun stopButtonFun() {
-        isActive = false
-        binding.textStatus.text = "Status: Inactive"
-        audioSource.interrupt()
+        val intent = Intent(this@MainActivity, ReadingScreen::class.java)
+        intent.putExtra("delay", delayInSeconds)
+        startActivity(intent)
     }
 
     private fun requestPermission(permission: String) {
