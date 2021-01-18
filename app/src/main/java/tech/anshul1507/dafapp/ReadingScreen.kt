@@ -1,5 +1,6 @@
 package tech.anshul1507.dafapp
 
+import android.media.MediaRecorder
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import tech.anshul1507.dafapp.databinding.ActivityReadingScreenBinding
@@ -28,13 +29,13 @@ class ReadingScreen : AppCompatActivity() {
     }
 
     private fun stopBackFun() {
-        audioSource.interrupt()
+        audioSource.close()
         finish()
     }
 
     override fun onBackPressed() {
         //Stop audio service when user press home back button
         super.onBackPressed()
-        audioSource.interrupt()
+        audioSource.close()
     }
 }

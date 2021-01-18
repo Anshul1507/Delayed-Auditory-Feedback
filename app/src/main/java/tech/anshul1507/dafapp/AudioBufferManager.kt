@@ -11,8 +11,8 @@ import java.util.*
 
 class AudioBufferManager(delay_time: Int) : Thread() {
 
-    private lateinit var audioRecord: AudioRecord
-    private lateinit var audioTrack: AudioTrack
+    lateinit var audioRecord: AudioRecord
+    lateinit var audioTrack: AudioTrack
     private var SAMPLE_RATE = 0
     private var buffersize = 0
     private var started = true
@@ -151,9 +151,8 @@ class AudioBufferManager(delay_time: Int) : Thread() {
         }
 
         //Clearing out the bases :)
-        audioRecord.stop()
         audioRecord.release()
-        audioTrack.stop()
+        audioTrack.release()
         circularByteBuffer.clear()
         Log.i("LOG_TAG", "Stage is yours")
         return
@@ -162,5 +161,6 @@ class AudioBufferManager(delay_time: Int) : Thread() {
     fun close() {
         started = false
         audioRecord.release()
+        audioTrack.release()
     }
 }
